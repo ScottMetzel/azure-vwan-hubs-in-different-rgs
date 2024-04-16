@@ -1,0 +1,72 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "VWAN_ResourceGroup_Name": {
+            "value": "Lab-RG-NetworkInfrastructure-01"
+        },
+        "VWAN_Name": {
+            "value": "Lab-VWAN-Core-01"
+        },
+        "VWAN_Region": {
+            "value": "westus2"
+        },
+        "VWANHub01_ResourceGroup_Name": {
+            "value": "Lab-RG-NetworkInfrastructure-02"
+        },
+        "VWANHub01_Name": {
+            "value": "Lab-Hub-Core-01"
+        },
+        "VWANHub01_Region": {
+            "value": "westus"
+        },
+        "VWANHub01_AddressPrefix": {
+            "value": "10.100.0.0/23"
+        },
+        "VWANHub01_VPNGateway_Name": {
+            "value": "Lab-VNG-Hub-01"
+        },
+        "VWANHub01_ExpressRouteGateway_Name": {
+            "value": "Lab-VNG-Hub-02"
+        },
+        "VWANHub02_ResourceGroup_Name": {
+            "value": "Lab-RG-NetworkInfrastructure-03"
+        },
+        "VWANHub02_Name": {
+            "value": "Lab-Hub-Core-02"
+        },
+        "VWANHub02_Region": {
+            "value": "westus3"
+        },
+        "VWANHub02_AddressPrefix": {
+            "value": "10.100.10.0/23"
+        },
+        "VWANHub02_VPNGateway_Name": {
+            "value": "Lab-VNG-Hub-01"
+        },
+        "VWANHub02_ExpressRouteGateway_Name": {
+            "value": "Lab-VNG-Hub-02"
+        },
+        "DeployVWAN": {
+            "value": true
+        },
+        "DeployFirstVWANHub": {
+            "value": true
+        },
+        "DeployFirstVWANHubVPNGateway": {
+            "value": true
+        },
+        "DeployFirstVWANHubExpressRouteGateway": {
+            "value": true
+        },
+        "DeploySecondVWANHub": {
+            "value": true
+        },
+        "DeploySecondVWANHubVPNGateway": {
+            "value": true
+        },
+        "DeploySecondVWANHubExpressRouteGateway": {
+            "value": true
+        }
+    }
+}

@@ -1,0 +1,435 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2018-05-01/subscriptionDeploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "VWAN_ResourceGroup_Name": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 80,
+            "metadata": {
+                "description": "The name of the resource group the Virtual WAN should be created in.",
+                "displayName": "Virtual WAN Resource Group Name"
+            }
+        },
+        "VWAN_Name": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 80,
+            "defaultValue": "Lab-VWAN-Core-01",
+            "metadata": {
+                "description": "The name of the Virtual WAN.",
+                "displayName": "Virtual WAN Name"
+            }
+        },
+        "VWAN_Region": {
+            "type": "string",
+            "metadata": {
+                "description": "The name of the Azure Region which the Virtual WAN should be created in.",
+                "displayName": "Virtual WAN Region"
+            }
+        },
+        "VWANHub01_ResourceGroup_Name": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 80,
+            "metadata": {
+                "description": "The name of the resource group the first Virtual Hub should be created in.",
+                "displayName": "Virtual Hub 01 Resource Group Name"
+            }
+        },
+        "VWANHub01_Name": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 80,
+            "defaultValue": "Lab-Hub-Core-01",
+            "metadata": {
+                "description": "The name of the first Virtual Hub.",
+                "displayName": "Virtual Hub 01 Name"
+            }
+        },
+        "VWANHub01_Region": {
+            "type": "string",
+            "metadata": {
+                "description": "The name of the Azure Region which the first Virtual Hub should be created in.",
+                "displayName": "Virtual Hub 01 Region"
+            }
+        },
+        "VWANHub01_AddressPrefix": {
+            "type": "string",
+            "minLength": 9,
+            "maxLength": 18,
+            "metadata": {
+                "description": "The address space which the first Virtual Hub will use. Must be unique and unused.",
+                "displayName": "Virtual Hub 01 Address Prefix"
+            }
+        },
+        "VWANHub01_VPNGateway_Name": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 80,
+            "metadata": {
+                "description": "The name of the VPN Gateway for the first Virtual Hub.",
+                "displayName": "Virtual Hub 01 VPN Gateway Name"
+            }
+        },
+        "VWANHub01_ExpressRouteGateway_Name": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 80,
+            "metadata": {
+                "description": "The name of the ExpressRoute Gateway for the first Virtual Hub.",
+                "displayName": "Virtual Hub 01 ExpressRoute Gateway Name"
+            }
+        },
+        "VWANHub02_ResourceGroup_Name": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 80,
+            "metadata": {
+                "description": "The name of the resource group the second Virtual Hub should be created in.",
+                "displayName": "Virtual Hub 02 Resource Group Name"
+            }
+        },
+        "VWANHub02_Name": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 80,
+            "defaultValue": "Lab-Hub-Core-02",
+            "metadata": {
+                "description": "The name of the second Virtual Hub.",
+                "displayName": "Virtual Hub 02 Name"
+            }
+        },
+        "VWANHub02_Region": {
+            "type": "string",
+            "metadata": {
+                "description": "The name of the Azure Region which the second Virtual Hub should be created in.",
+                "displayName": "Virtual Hub 02 Region"
+            }
+        },
+        "VWANHub02_AddressPrefix": {
+            "type": "string",
+            "minLength": 9,
+            "maxLength": 18,
+            "metadata": {
+                "description": "The address space which the second Virtual Hub will use. Must be unique and unused.",
+                "displayName": "Virtual Hub 02 Address Prefix"
+            }
+        },
+        "VWANHub02_VPNGateway_Name": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 80,
+            "metadata": {
+                "description": "The name of the VPN Gateway for the second Virtual Hub.",
+                "displayName": "Virtual Hub 02 VPN Gateway Name"
+            }
+        },
+        "VWANHub02_ExpressRouteGateway_Name": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 80,
+            "metadata": {
+                "description": "The name of the ExpressRoute Gateway for the second Virtual Hub.",
+                "displayName": "Virtual Hub 02 ExpressRoute Gateway Name"
+            }
+        },
+        "DeployVWAN": {
+            "type": "bool",
+            "defaultValue": true,
+            "metadata": {
+                "description": "Controls whether the Virtual WAN is deployed.",
+                "displayName": "Deploy Virtual WAN"
+            }
+        },
+        "DeployFirstVWANHub": {
+            "type": "bool",
+            "defaultValue": true,
+            "metadata": {
+                "description": "Controls whether the first VWAN Hub is deployed.",
+                "displayName": "Deploy First Virtual Hub"
+            }
+        },
+        "DeployFirstVWANHubVPNGateway": {
+            "type": "bool",
+            "defaultValue": true,
+            "metadata": {
+                "description": "Controls whether the first VWAN Hub's VPN Gateway is deployed.",
+                "displayName": "Deploy First Virtual Hub VPN Gateway"
+            }
+        },
+        "DeployFirstVWANHubExpressRouteGateway": {
+            "type": "bool",
+            "defaultValue": true,
+            "metadata": {
+                "description": "Controls whether the first VWAN Hub's ExpressRoute Gateway is deployed.",
+                "displayName": "Deploy First Virtual Hub ExpressRoute Gateway"
+            }
+        },
+        "DeploySecondVWANHub": {
+            "type": "bool",
+            "defaultValue": true,
+            "metadata": {
+                "description": "Controls whether the second VWAN Hub is deployed.",
+                "displayName": "Deploy Second Virtual Hub"
+            }
+        },
+        "DeploySecondVWANHubVPNGateway": {
+            "type": "bool",
+            "defaultValue": true,
+            "metadata": {
+                "description": "Controls whether the second VWAN Hub's VPN Gateway is deployed.",
+                "displayName": "Deploy Second Virtual Hub VPN Gateway"
+            }
+        },
+        "DeploySecondVWANHubExpressRouteGateway": {
+            "type": "bool",
+            "defaultValue": true,
+            "metadata": {
+                "description": "Controls whether the second VWAN Hub's ExpressRoute Gateway is deployed.",
+                "displayName": "Deploy Second Virtual Hub ExpressRoute Gateway"
+            }
+        },
+        "DateTimeNow": {
+            "type": "string",
+            "defaultValue": "[utcNow()]",
+            "metadata": {
+                "description": "Please do not modify the value of this parameter. It is used as part of the name of resource group scope-level deployments.",
+                "displayName": "Current Date and Time"
+            }
+        }
+    },
+    "functions": [],
+    "variables": {
+        "vwan_deployment_name": "[concat('Azure-VWAN_',parameters('DateTimeNow'))]",
+        "vwan_resource_id": "[concat('/subscriptions/',subscription().subscriptionId,'/resourceGroups/',parameters('VWAN_ResourceGroup_Name'),'/providers/Microsoft.Network/virtualWans/',parameters('VWAN_Name'))]",
+        "vwanhub01_deployment_name": "[concat('Azure-VWAN-Hub-01_',parameters('DateTimeNow'))]",
+        "vwanhub01_resource_id": "[concat('/subscriptions/',subscription().subscriptionId,'/resourceGroups/',parameters('VWANHub01_ResourceGroup_Name'),'/providers/Microsoft.Network/virtualHubs/',parameters('VWANHub01_Name'))]",
+        "vwanhub02_deployment_name": "[concat('Azure-VWAN-Hub-02_',parameters('DateTimeNow'))]",
+        "vwanhub02_resource_id": "[concat('/subscriptions/',subscription().subscriptionId,'/resourceGroups/',parameters('VWANHub02_ResourceGroup_Name'),'/providers/Microsoft.Network/virtualHubs/',parameters('VWANHub02_Name'))]"
+    },
+    "resources": [
+        {
+            "type": "Microsoft.Resources/resourceGroups",
+            "apiVersion": "2022-09-01",
+            "location": "[parameters('VWAN_Region')]",
+            "name": "[parameters('VWAN_ResourceGroup_Name')]",
+            "condition": "[parameters('DeployVWAN')]"
+        },
+        {
+            "type": "Microsoft.Resources/resourceGroups",
+            "apiVersion": "2022-09-01",
+            "location": "[parameters('VWANHub01_Region')]",
+            "name": "[parameters('VWANHub01_ResourceGroup_Name')]",
+            "condition": "[and(parameters('DeployVWAN'),parameters('DeployFirstVWANHub'))]"
+        },
+        {
+            "type": "Microsoft.Resources/resourceGroups",
+            "apiVersion": "2022-09-01",
+            "location": "[parameters('VWANHub02_Region')]",
+            "name": "[parameters('VWANHub02_ResourceGroup_Name')]",
+            "condition": "[and(parameters('DeployVWAN'),parameters('DeploySecondVWANHub'))]"
+        },
+        {
+            "type": "Microsoft.Resources/deployments",
+            "apiVersion": "2022-09-01",
+            "name": "[variables('vwan_deployment_name')]",
+            "condition": "[parameters('DeployVWAN')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Resources/resourceGroups', parameters('VWAN_ResourceGroup_Name'))]"
+            ],
+            "resourceGroup": "[parameters('VWAN_ResourceGroup_Name')]",
+            "properties": {
+                "mode": "Incremental",
+                "template": {
+                    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+                    "contentVersion": "1.0.0.0",
+                    "resources": [
+                        {
+                            "type": "Microsoft.Network/virtualWans",
+                            "apiVersion": "2023-04-01",
+                            "name": "[parameters('VWAN_Name')]",
+                            "location": "[parameters('VWAN_Region')]",
+                            "properties": {
+                                "allowBranchToBranchTraffic": true,
+                                "allowVnetToVnetTraffic": true,
+                                "disableVpnEncryption": false,
+                                "type": "Standard"
+                            }
+                        }
+                    ],
+                    "outputs": {
+                        "VWANResourceIDActualNested": {
+                            "type": "string",
+                            "value": "[resourceId('Microsoft.Network/virtualWans',parameters('VWAN_Name'))]"
+                        }
+                    }
+                }
+            }
+        },
+        {
+            "type": "Microsoft.Resources/deployments",
+            "apiVersion": "2022-09-01",
+            "name": "[variables('vwanhub01_deployment_name')]",
+            "condition": "[and(parameters('DeployVWAN'),parameters('DeployFirstVWANHub'))]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Resources/resourceGroups',parameters('VWANHub01_ResourceGroup_Name'))]",
+                "[variables('vwan_deployment_name')]"
+            ],
+            "resourceGroup": "[parameters('VWANHub01_ResourceGroup_Name')]",
+            "properties": {
+                "mode": "Incremental",
+                "template": {
+                    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+                    "contentVersion": "1.0.0.0",
+                    "resources": [
+                        {
+                            "type": "Microsoft.Network/virtualHubs",
+                            "apiVersion": "2023-04-01",
+                            "name": "[parameters('VWANHub01_Name')]",
+                            "location": "[parameters('VWANHub01_Region')]",
+                            "condition": "[and(parameters('DeployVWAN'),parameters('DeployFirstVWANHub'))]",
+                            "properties": {
+                                "addressPrefix": "[parameters('VWANHub01_AddressPrefix')]",
+                                "hubRoutingPreference": "ASPath",
+                                "preferredRoutingGateway": "ExpressRoute",
+                                "sku": "Standard",
+                                "virtualRouterAutoScaleConfiguration": {
+                                    "minCapacity": 2
+                                },
+                                "virtualWan": {
+                                    "id": "[variables('vwan_resource_id')]"
+                                }
+                            }
+                        },
+                        {
+                            "type": "Microsoft.Network/vpnGateways",
+                            "apiVersion": "2023-04-01",
+                            "name": "[parameters('VWANHub01_VPNGateway_Name')]",
+                            "location": "[parameters('VWANHub01_Region')]",
+                            "condition": "[and(parameters('DeployFirstVWANHub'),parameters('DeployFirstVWANHubVPNGateway'))]",
+                            "dependsOn": [
+                                "[parameters('VWANHub01_Name')]"
+                            ],
+                            "properties": {
+                                "vpnGatewayScaleUnit": 1,
+                                "virtualHub": {
+                                    "id": "[variables('vwanhub01_resource_id')]"
+                                },
+                                "isRoutingPreferenceInternet": false,
+                                "bgpSettings": {
+                                    "asn": 65515
+                                }
+                            }
+                        },
+                        {
+                            "type": "Microsoft.Network/expressRouteGateways",
+                            "apiVersion": "2023-04-01",
+                            "name": "[parameters('VWANHub01_ExpressRouteGateway_Name')]",
+                            "location": "[parameters('VWANHub01_Region')]",
+                            "condition": "[and(parameters('DeployFirstVWANHub'),parameters('DeployFirstVWANHubExpressRouteGateway'))]",
+                            "dependsOn": [
+                                "[parameters('VWANHub01_Name')]"
+                            ],
+                            "properties": {
+                                "autoScaleConfiguration": {
+                                    "bounds": {
+                                        "min": 1
+                                    }
+                                },
+                                "virtualHub": {
+                                    "id": "[variables('vwanhub01_resource_id')]"
+                                }
+                            }
+                        }
+                    ]
+                }
+            }
+        },
+        {
+            "type": "Microsoft.Resources/deployments",
+            "apiVersion": "2022-09-01",
+            "name": "[variables('vwanhub02_deployment_name')]",
+            "condition": "[and(parameters('DeployVWAN'),parameters('DeploySecondVWANHub'))]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Resources/resourceGroups',parameters('VWANHub02_ResourceGroup_Name'))]",
+                "[variables('vwan_deployment_name')]"
+            ],
+            "resourceGroup": "[parameters('VWANHub02_ResourceGroup_Name')]",
+            "properties": {
+                "mode": "Incremental",
+                "template": {
+                    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+                    "contentVersion": "1.0.0.0",
+                    "resources": [
+                        {
+                            "type": "Microsoft.Network/virtualHubs",
+                            "apiVersion": "2023-04-01",
+                            "name": "[parameters('VWANHub02_Name')]",
+                            "location": "[parameters('VWANHub02_Region')]",
+                            "condition": "[and(parameters('DeployVWAN'),parameters('DeploySecondVWANHub'))]",
+                            "properties": {
+                                "addressPrefix": "[parameters('VWANHub02_AddressPrefix')]",
+                                "hubRoutingPreference": "ASPath",
+                                "preferredRoutingGateway": "ExpressRoute",
+                                "sku": "Standard",
+                                "virtualRouterAutoScaleConfiguration": {
+                                    "minCapacity": 2
+                                },
+                                "virtualWan": {
+                                    "id": "[variables('vwan_resource_id')]"
+                                }
+                            }
+                        },
+                        {
+                            "type": "Microsoft.Network/vpnGateways",
+                            "apiVersion": "2023-04-01",
+                            "name": "[parameters('VWANHub02_VPNGateway_Name')]",
+                            "location": "[parameters('VWANHub02_Region')]",
+                            "condition": "[and(parameters('DeploySecondVWANHub'),parameters('DeploySecondVWANHubVPNGateway'))]",
+                            "dependsOn": [
+                                "[parameters('VWANHub02_Name')]"
+                            ],
+                            "properties": {
+                                "vpnGatewayScaleUnit": 1,
+                                "virtualHub": {
+                                    "id": "[variables('vwanhub02_resource_id')]"
+                                },
+                                "isRoutingPreferenceInternet": false,
+                                "bgpSettings": {
+                                    "asn": 65515
+                                }
+                            }
+                        },
+                        {
+                            "type": "Microsoft.Network/expressRouteGateways",
+                            "apiVersion": "2023-04-01",
+                            "name": "[parameters('VWANHub02_ExpressRouteGateway_Name')]",
+                            "location": "[parameters('VWANHub02_Region')]",
+                            "condition": "[and(parameters('DeploySecondVWANHub'),parameters('DeploySecondVWANHubExpressRouteGateway'))]",
+                            "dependsOn": [
+                                "[parameters('VWANHub02_Name')]"
+                            ],
+                            "properties": {
+                                "autoScaleConfiguration": {
+                                    "bounds": {
+                                        "min": 1
+                                    }
+                                },
+                                "virtualHub": {
+                                    "id": "[variables('vwanhub02_resource_id')]"
+                                }
+                            }
+                        }
+                    ]
+                }
+            }
+        }
+    ],
+    "outputs": {
+        "VWANResourceIDGenerated": {
+            "type": "string",
+            "value": "[variables('vwan_resource_id')]"
+        }
+    }
+}

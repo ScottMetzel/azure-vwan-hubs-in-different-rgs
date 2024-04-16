@@ -1,0 +1,550 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2021-09-09/uiFormDefinition.schema.json",
+    "view": {
+        "kind": "Form",
+        "properties": {
+            "title": "Deploy Virtual WAN with Dual Virtual Hubs in Different Resource Groups",
+            "steps": [
+                {
+                    "name": "vwansetup",
+                    "label": "Virtual WAN Setup",
+                    "description": "Create a Virtual WAN, optionally with dual Virtual WAN Hubs (\"Virtual Hubs\") and gateways. All Virtual WANs created through this process use the Standard SKU.",
+                    "subLabel": {
+                        "preValidation": "Provide deployment details for the Virtual WAN.",
+                        "postValidation": "Done"
+                    },
+                    "bladeTitle": "vwanBasics",
+                    "elements": [
+                        {
+                            "name": "VWAN_Region",
+                            "type": "Microsoft.Common.ResourceScope",
+                            "label": "Virtual WAN Region",
+                            "subLabel": "",
+                            "defaultValue": "",
+                            "toolTip": "The name of the Azure Region which the Virtual WAN should be created in.",
+                            "location": {
+                                "resourceTypes": [
+                                    "Microsoft.Network/virtualWans",
+                                    "Microsoft.Network/virtualHubs",
+                                    "Microsoft.Network/vpnGateways",
+                                    "Microsoft.Network/expressRouteGateways"
+                                ]
+                            },
+                            "infoMessages": [],
+                            "visible": true
+                        },
+                        {
+                            "name": "VWAN_ResourceGroup_Name",
+                            "type": "Microsoft.Common.ResourceGroupSelector",
+                            "label": "Resource Group",
+                            "scope": {
+                                "subscriptionId": "[steps('vwansetup').VWAN_Region.subscription.subscriptionId]"
+                            },
+                            "allowedMode": "Both",
+                            "allowExisting": true,
+                            "toolTip": "The name of the resource group the Virtual WAN should be created in.",
+                            "infoMessages": [],
+                            "visible": true
+                        },
+                        {
+                            "name": "VWAN_Name",
+                            "type": "Microsoft.Common.TextBox",
+                            "label": "Virtual WAN Name",
+                            "subLabel": "",
+                            "defaultValue": "Lab-VWAN-Core-01",
+                            "toolTip": "The name of the Virtual WAN.",
+                            "constraints": {
+                                "required": false,
+                                "regex": "",
+                                "validationMessage": "",
+                                "validations": [
+                                    {
+                                        "isValid": "[or(or(empty(steps('basics').VWAN_Name),and(not(startsWith(steps('basics').VWAN_Name,'[[')),startsWith(steps('basics').VWAN_Name,'['),endsWith(steps('basics').VWAN_Name,']'),greater(indexOf(steps('basics').VWAN_Name,'('),-1),greater(indexOf(steps('basics').VWAN_Name,')'),-1))),greaterOrEquals(length(steps('basics').VWAN_Name),1))]",
+                                        "message": "The value must have a length of at least 1."
+                                    },
+                                    {
+                                        "isValid": "[or(or(empty(steps('basics').VWAN_Name),and(not(startsWith(steps('basics').VWAN_Name,'[[')),startsWith(steps('basics').VWAN_Name,'['),endsWith(steps('basics').VWAN_Name,']'),greater(indexOf(steps('basics').VWAN_Name,'('),-1),greater(indexOf(steps('basics').VWAN_Name,')'),-1))),lessOrEquals(length(steps('basics').VWAN_Name),80))]",
+                                        "message": "The value must have a length of at most 80."
+                                    }
+                                ]
+                            },
+                            "infoMessages": [],
+                            "visible": true
+                        },
+                        {
+                            "name": "DateTimeNow",
+                            "type": "Microsoft.Common.TextBox",
+                            "label": "Current Date and Time",
+                            "subLabel": "",
+                            "defaultValue": "[[utcNow()]",
+                            "toolTip": "Please do not modify the value of this parameter. It is used as part of the name of resource group scope-level deployments.",
+                            "constraints": {
+                                "required": false,
+                                "regex": "",
+                                "validationMessage": "",
+                                "validations": []
+                            },
+                            "infoMessages": [],
+                            "visible": false
+                        }
+                    ]
+                },
+                {
+                    "name": "firstvirtualhub",
+                    "label": "First Virtual Hub",
+                    "subLabel": {
+                        "preValidation": "Provide deployment information for the first Virtual Hub.",
+                        "postValidation": "Done"
+                    },
+                    "elements": [
+                        {
+                            "name": "DeployFirstVWANHub",
+                            "type": "Microsoft.Common.OptionsGroup",
+                            "label": "Do you want to create the first Virtual Hub?",
+                            "subLabel": "",
+                            "defaultValue": "No",
+                            "toolTip": "Controls whether the first VWAN Hub is deployed.",
+                            "constraints": {
+                                "required": false,
+                                "allowedValues": [
+                                    {
+                                        "label": "Yes",
+                                        "value": true
+                                    },
+                                    {
+                                        "label": "No",
+                                        "value": false
+                                    }
+                                ],
+                                "validations": []
+                            },
+                            "infoMessages": [],
+                            "visible": true
+                        },
+                        {
+                            "name": "VWANHub01_Region",
+                            "type": "Microsoft.Common.LocationSelector",
+                            "label": "Virtual Hub 01 Region",
+                            "subLabel": "",
+                            "defaultValue": "West US 2",
+                            "toolTip": "The name of the Azure Region which the first Virtual Hub should be created in.",
+                            "resourceTypes": [
+                                "Microsoft.Network/virtualHubs",
+                                "Microsoft.Network/vpnGateways",
+                                "Microsoft.Network/expressRouteGateways"
+                            ],
+                            "scope": {
+                                "subscriptionId": "[steps('vwansetup').VWAN_Region.subscription.subscriptionId]"
+                            },
+                            "infoMessages": [],
+                            "visible": "[steps('firstvirtualhub').DeployFirstVWANHub]"
+                        },
+                        {
+                            "name": "VWANHub01_ResourceGroup_Name",
+                            "type": "Microsoft.Common.ResourceGroupSelector",
+                            "label": "Virtual Hub 01 Resource Group",
+                            "scope": {
+                                "subscriptionId": "[steps('vwansetup').VWAN_Region.subscription.subscriptionId]"
+                            },
+                            "allowedMode": "Both",
+                            "allowExisting": true,
+                            "toolTip": "The name of the resource group the first Virtual Hub should be created in.",
+                            "infoMessages": [],
+                            "visible": "[steps('firstvirtualhub').DeployFirstVWANHub]"
+                        },
+                        {
+                            "name": "VWANHub01_Name",
+                            "type": "Microsoft.Common.TextBox",
+                            "label": "Virtual Hub 01 Name",
+                            "subLabel": "",
+                            "defaultValue": "Lab-Hub-Core-01",
+                            "toolTip": "The name of the first Virtual Hub.",
+                            "constraints": {
+                                "required": false,
+                                "regex": "",
+                                "validationMessage": "",
+                                "validations": [
+                                    {
+                                        "isValid": "[or(or(empty(steps('basics').VWANHub01_Name),and(not(startsWith(steps('basics').VWANHub01_Name,'[[')),startsWith(steps('basics').VWANHub01_Name,'['),endsWith(steps('basics').VWANHub01_Name,']'),greater(indexOf(steps('basics').VWANHub01_Name,'('),-1),greater(indexOf(steps('basics').VWANHub01_Name,')'),-1))),greaterOrEquals(length(steps('basics').VWANHub01_Name),1))]",
+                                        "message": "The value must have a length of at least 1."
+                                    },
+                                    {
+                                        "isValid": "[or(or(empty(steps('basics').VWANHub01_Name),and(not(startsWith(steps('basics').VWANHub01_Name,'[[')),startsWith(steps('basics').VWANHub01_Name,'['),endsWith(steps('basics').VWANHub01_Name,']'),greater(indexOf(steps('basics').VWANHub01_Name,'('),-1),greater(indexOf(steps('basics').VWANHub01_Name,')'),-1))),lessOrEquals(length(steps('basics').VWANHub01_Name),80))]",
+                                        "message": "The value must have a length of at most 80."
+                                    }
+                                ]
+                            },
+                            "infoMessages": [],
+                            "visible": "[steps('firstvirtualhub').DeployFirstVWANHub]"
+                        },
+                        {
+                            "name": "VWANHub01_AddressPrefix",
+                            "type": "Microsoft.Common.TextBox",
+                            "label": "Virtual Hub 01 Address Prefix",
+                            "subLabel": "",
+                            "defaultValue": "",
+                            "toolTip": "The address space which the first Virtual Hub will use. Must be unique and unused.",
+                            "constraints": {
+                                "required": true,
+                                "regex": "",
+                                "validationMessage": "",
+                                "validations": [
+                                    {
+                                        "isValid": "[or(or(empty(steps('basics').VWANHub01_AddressPrefix),and(not(startsWith(steps('basics').VWANHub01_AddressPrefix,'[[')),startsWith(steps('basics').VWANHub01_AddressPrefix,'['),endsWith(steps('basics').VWANHub01_AddressPrefix,']'),greater(indexOf(steps('basics').VWANHub01_AddressPrefix,'('),-1),greater(indexOf(steps('basics').VWANHub01_AddressPrefix,')'),-1))),greaterOrEquals(length(steps('basics').VWANHub01_AddressPrefix),9))]",
+                                        "message": "The value must have a length of at least 9."
+                                    },
+                                    {
+                                        "isValid": "[or(or(empty(steps('basics').VWANHub01_AddressPrefix),and(not(startsWith(steps('basics').VWANHub01_AddressPrefix,'[[')),startsWith(steps('basics').VWANHub01_AddressPrefix,'['),endsWith(steps('basics').VWANHub01_AddressPrefix,']'),greater(indexOf(steps('basics').VWANHub01_AddressPrefix,'('),-1),greater(indexOf(steps('basics').VWANHub01_AddressPrefix,')'),-1))),lessOrEquals(length(steps('basics').VWANHub01_AddressPrefix),18))]",
+                                        "message": "The value must have a length of at most 18."
+                                    }
+                                ]
+                            },
+                            "infoMessages": [],
+                            "visible": "[steps('firstvirtualhub').DeployFirstVWANHub]"
+                        },
+                        {
+                            "name": "DeployFirstVWANHubVPNGateway",
+                            "type": "Microsoft.Common.OptionsGroup",
+                            "label": "Do you want to create a Site to Site (VPN Gateway)?",
+                            "subLabel": "",
+                            "defaultValue": "No",
+                            "toolTip": "Controls whether the first VWAN Hub's VPN Gateway is deployed.",
+                            "constraints": {
+                                "required": false,
+                                "allowedValues": [
+                                    {
+                                        "label": "Yes",
+                                        "value": true
+                                    },
+                                    {
+                                        "label": "No",
+                                        "value": false
+                                    }
+                                ],
+                                "validations": []
+                            },
+                            "infoMessages": [],
+                            "visible": "[steps('firstvirtualhub').DeployFirstVWANHub]"
+                        },
+                        {
+                            "name": "VWANHub01_VPNGateway_Name",
+                            "type": "Microsoft.Common.TextBox",
+                            "label": "VPN Gateway Name",
+                            "subLabel": "",
+                            "defaultValue": "",
+                            "toolTip": "The name of the VPN Gateway for the first Virtual Hub.",
+                            "constraints": {
+                                "required": true,
+                                "regex": "",
+                                "validationMessage": "",
+                                "validations": [
+                                    {
+                                        "isValid": "[or(or(empty(steps('basics').VWANHub01_VPNGateway_Name),and(not(startsWith(steps('basics').VWANHub01_VPNGateway_Name,'[[')),startsWith(steps('basics').VWANHub01_VPNGateway_Name,'['),endsWith(steps('basics').VWANHub01_VPNGateway_Name,']'),greater(indexOf(steps('basics').VWANHub01_VPNGateway_Name,'('),-1),greater(indexOf(steps('basics').VWANHub01_VPNGateway_Name,')'),-1))),greaterOrEquals(length(steps('basics').VWANHub01_VPNGateway_Name),1))]",
+                                        "message": "The value must have a length of at least 1."
+                                    },
+                                    {
+                                        "isValid": "[or(or(empty(steps('basics').VWANHub01_VPNGateway_Name),and(not(startsWith(steps('basics').VWANHub01_VPNGateway_Name,'[[')),startsWith(steps('basics').VWANHub01_VPNGateway_Name,'['),endsWith(steps('basics').VWANHub01_VPNGateway_Name,']'),greater(indexOf(steps('basics').VWANHub01_VPNGateway_Name,'('),-1),greater(indexOf(steps('basics').VWANHub01_VPNGateway_Name,')'),-1))),lessOrEquals(length(steps('basics').VWANHub01_VPNGateway_Name),80))]",
+                                        "message": "The value must have a length of at most 80."
+                                    }
+                                ]
+                            },
+                            "infoMessages": [],
+                            "visible": "[and(steps('firstvirtualhub').DeployFirstVWANHub,steps('firstvirtualhub').DeployFirstVWANHubVPNGateway)]"
+                        },
+                        {
+                            "name": "DeployFirstVWANHubExpressRouteGateway",
+                            "type": "Microsoft.Common.OptionsGroup",
+                            "label": "Do you want to create an ExpressRoute Gateway?",
+                            "subLabel": "",
+                            "defaultValue": "No",
+                            "toolTip": "Controls whether the first VWAN Hub's ExpressRoute Gateway is deployed.",
+                            "constraints": {
+                                "required": false,
+                                "allowedValues": [
+                                    {
+                                        "label": "Yes",
+                                        "value": true
+                                    },
+                                    {
+                                        "label": "No",
+                                        "value": false
+                                    }
+                                ],
+                                "validations": []
+                            },
+                            "infoMessages": [],
+                            "visible": "[steps('firstvirtualhub').DeployFirstVWANHub]"
+                        },
+                        {
+                            "name": "VWANHub01_ExpressRouteGateway_Name",
+                            "type": "Microsoft.Common.TextBox",
+                            "label": "Virtual Hub 01 ExpressRoute Gateway Name",
+                            "subLabel": "",
+                            "defaultValue": "",
+                            "toolTip": "The name of the ExpressRoute Gateway for the first Virtual Hub.",
+                            "constraints": {
+                                "required": true,
+                                "regex": "",
+                                "validationMessage": "",
+                                "validations": [
+                                    {
+                                        "isValid": "[or(or(empty(steps('basics').VWANHub01_ExpressRouteGateway_Name),and(not(startsWith(steps('basics').VWANHub01_ExpressRouteGateway_Name,'[[')),startsWith(steps('basics').VWANHub01_ExpressRouteGateway_Name,'['),endsWith(steps('basics').VWANHub01_ExpressRouteGateway_Name,']'),greater(indexOf(steps('basics').VWANHub01_ExpressRouteGateway_Name,'('),-1),greater(indexOf(steps('basics').VWANHub01_ExpressRouteGateway_Name,')'),-1))),greaterOrEquals(length(steps('basics').VWANHub01_ExpressRouteGateway_Name),1))]",
+                                        "message": "The value must have a length of at least 1."
+                                    },
+                                    {
+                                        "isValid": "[or(or(empty(steps('basics').VWANHub01_ExpressRouteGateway_Name),and(not(startsWith(steps('basics').VWANHub01_ExpressRouteGateway_Name,'[[')),startsWith(steps('basics').VWANHub01_ExpressRouteGateway_Name,'['),endsWith(steps('basics').VWANHub01_ExpressRouteGateway_Name,']'),greater(indexOf(steps('basics').VWANHub01_ExpressRouteGateway_Name,'('),-1),greater(indexOf(steps('basics').VWANHub01_ExpressRouteGateway_Name,')'),-1))),lessOrEquals(length(steps('basics').VWANHub01_ExpressRouteGateway_Name),80))]",
+                                        "message": "The value must have a length of at most 80."
+                                    }
+                                ]
+                            },
+                            "infoMessages": [],
+                            "visible": "[and(steps('firstvirtualhub').DeployFirstVWANHub,steps('firstvirtualhub').DeployFirstVWANHubExpressRouteGateway)]"
+                        }
+                    ]
+                },
+                {
+                    "name": "secondvirtualhub",
+                    "label": "Second Virtual Hub",
+                    "subLabel": {
+                        "preValidation": "Provide deployment information for the second Virtual Hub.",
+                        "postValidation": "Done"
+                    },
+                    "elements": [
+                        {
+                            "name": "DeploySecondVWANHub",
+                            "type": "Microsoft.Common.OptionsGroup",
+                            "label": "Do you want to create a second Virtual Hub?",
+                            "subLabel": "",
+                            "defaultValue": "No",
+                            "toolTip": "Controls whether the second VWAN Hub is deployed.",
+                            "constraints": {
+                                "required": false,
+                                "allowedValues": [
+                                    {
+                                        "label": "Yes",
+                                        "value": true
+                                    },
+                                    {
+                                        "label": "No",
+                                        "value": false
+                                    }
+                                ],
+                                "validations": []
+                            },
+                            "infoMessages": [],
+                            "visible": true
+                        },
+                        {
+                            "name": "VWANHub02_Region",
+                            "type": "Microsoft.Common.LocationSelector",
+                            "label": "Virtual Hub 02 Region",
+                            "subLabel": "",
+                            "defaultValue": "",
+                            "toolTip": "The name of the Azure Region which the second Virtual Hub should be created in.",
+                            "resourceTypes": [
+                                "Microsoft.Network/virtualHubs",
+                                "Microsoft.Network/vpnGateways",
+                                "Microsoft.Network/expressRouteGateways"
+                            ],
+                            "scope": {
+                                "subscriptionId": "[steps('vwansetup').VWAN_Region.subscription.subscriptionId]"
+                            },
+                            "infoMessages": [],
+                            "visible": "[steps('secondvirtualhub').DeploySecondVWANHub]"
+                        },
+                        {
+                            "name": "VWANHub02_ResourceGroup_Name",
+                            "type": "Microsoft.Common.ResourceGroupSelector",
+                            "label": "Virtual Hub 02 Resource Group Name",
+                            "scope": {
+                                "subscriptionId": "[steps('vwansetup').VWAN_Region.subscription.subscriptionId]"
+                            },
+                            "allowedMode": "Both",
+                            "allowExisting": true,
+                            "toolTip": "The name of the resource group the second Virtual Hub should be created in.",
+                            "infoMessages": [],
+                            "visible": "[steps('secondvirtualhub').DeploySecondVWANHub]"
+                        },
+                        {
+                            "name": "VWANHub02_Name",
+                            "type": "Microsoft.Common.TextBox",
+                            "label": "Virtual Hub 02 Name",
+                            "subLabel": "",
+                            "defaultValue": "Lab-Hub-Core-02",
+                            "toolTip": "The name of the second Virtual Hub.",
+                            "constraints": {
+                                "required": false,
+                                "regex": "",
+                                "validationMessage": "",
+                                "validations": [
+                                    {
+                                        "isValid": "[or(or(empty(steps('basics').VWANHub02_Name),and(not(startsWith(steps('basics').VWANHub02_Name,'[[')),startsWith(steps('basics').VWANHub02_Name,'['),endsWith(steps('basics').VWANHub02_Name,']'),greater(indexOf(steps('basics').VWANHub02_Name,'('),-1),greater(indexOf(steps('basics').VWANHub02_Name,')'),-1))),greaterOrEquals(length(steps('basics').VWANHub02_Name),1))]",
+                                        "message": "The value must have a length of at least 1."
+                                    },
+                                    {
+                                        "isValid": "[or(or(empty(steps('basics').VWANHub02_Name),and(not(startsWith(steps('basics').VWANHub02_Name,'[[')),startsWith(steps('basics').VWANHub02_Name,'['),endsWith(steps('basics').VWANHub02_Name,']'),greater(indexOf(steps('basics').VWANHub02_Name,'('),-1),greater(indexOf(steps('basics').VWANHub02_Name,')'),-1))),lessOrEquals(length(steps('basics').VWANHub02_Name),80))]",
+                                        "message": "The value must have a length of at most 80."
+                                    }
+                                ]
+                            },
+                            "infoMessages": [],
+                            "visible": "[steps('secondvirtualhub').DeploySecondVWANHub]"
+                        },
+                        {
+                            "name": "VWANHub02_AddressPrefix",
+                            "type": "Microsoft.Common.TextBox",
+                            "label": "Virtual Hub 02 Address Prefix",
+                            "subLabel": "",
+                            "defaultValue": "",
+                            "toolTip": "The address space which the second Virtual Hub will use. Must be unique and unused.",
+                            "constraints": {
+                                "required": true,
+                                "regex": "",
+                                "validationMessage": "",
+                                "validations": [
+                                    {
+                                        "isValid": "[or(or(empty(steps('basics').VWANHub02_AddressPrefix),and(not(startsWith(steps('basics').VWANHub02_AddressPrefix,'[[')),startsWith(steps('basics').VWANHub02_AddressPrefix,'['),endsWith(steps('basics').VWANHub02_AddressPrefix,']'),greater(indexOf(steps('basics').VWANHub02_AddressPrefix,'('),-1),greater(indexOf(steps('basics').VWANHub02_AddressPrefix,')'),-1))),greaterOrEquals(length(steps('basics').VWANHub02_AddressPrefix),9))]",
+                                        "message": "The value must have a length of at least 9."
+                                    },
+                                    {
+                                        "isValid": "[or(or(empty(steps('basics').VWANHub02_AddressPrefix),and(not(startsWith(steps('basics').VWANHub02_AddressPrefix,'[[')),startsWith(steps('basics').VWANHub02_AddressPrefix,'['),endsWith(steps('basics').VWANHub02_AddressPrefix,']'),greater(indexOf(steps('basics').VWANHub02_AddressPrefix,'('),-1),greater(indexOf(steps('basics').VWANHub02_AddressPrefix,')'),-1))),lessOrEquals(length(steps('basics').VWANHub02_AddressPrefix),18))]",
+                                        "message": "The value must have a length of at most 18."
+                                    }
+                                ]
+                            },
+                            "infoMessages": [],
+                            "visible": "[steps('secondvirtualhub').DeploySecondVWANHub]"
+                        },
+                        {
+                            "name": "DeploySecondVWANHubVPNGateway",
+                            "type": "Microsoft.Common.OptionsGroup",
+                            "label": "Do you want to create a Site to Site (VPN Gateway)?",
+                            "subLabel": "",
+                            "defaultValue": "No",
+                            "toolTip": "Controls whether the second VWAN Hub's VPN Gateway is deployed.",
+                            "constraints": {
+                                "required": false,
+                                "allowedValues": [
+                                    {
+                                        "label": "Yes",
+                                        "value": true
+                                    },
+                                    {
+                                        "label": "No",
+                                        "value": false
+                                    }
+                                ],
+                                "validations": []
+                            },
+                            "infoMessages": [],
+                            "visible": "[steps('secondvirtualhub').DeploySecondVWANHub]"
+                        },
+                        {
+                            "name": "VWANHub02_VPNGateway_Name",
+                            "type": "Microsoft.Common.TextBox",
+                            "label": "VPN Gateway Name",
+                            "subLabel": "",
+                            "defaultValue": "",
+                            "toolTip": "The name of the VPN Gateway for the second Virtual Hub.",
+                            "constraints": {
+                                "required": true,
+                                "regex": "",
+                                "validationMessage": "",
+                                "validations": [
+                                    {
+                                        "isValid": "[or(or(empty(steps('basics').VWANHub02_VPNGateway_Name),and(not(startsWith(steps('basics').VWANHub02_VPNGateway_Name,'[[')),startsWith(steps('basics').VWANHub02_VPNGateway_Name,'['),endsWith(steps('basics').VWANHub02_VPNGateway_Name,']'),greater(indexOf(steps('basics').VWANHub02_VPNGateway_Name,'('),-1),greater(indexOf(steps('basics').VWANHub02_VPNGateway_Name,')'),-1))),greaterOrEquals(length(steps('basics').VWANHub02_VPNGateway_Name),1))]",
+                                        "message": "The value must have a length of at least 1."
+                                    },
+                                    {
+                                        "isValid": "[or(or(empty(steps('basics').VWANHub02_VPNGateway_Name),and(not(startsWith(steps('basics').VWANHub02_VPNGateway_Name,'[[')),startsWith(steps('basics').VWANHub02_VPNGateway_Name,'['),endsWith(steps('basics').VWANHub02_VPNGateway_Name,']'),greater(indexOf(steps('basics').VWANHub02_VPNGateway_Name,'('),-1),greater(indexOf(steps('basics').VWANHub02_VPNGateway_Name,')'),-1))),lessOrEquals(length(steps('basics').VWANHub02_VPNGateway_Name),80))]",
+                                        "message": "The value must have a length of at most 80."
+                                    }
+                                ]
+                            },
+                            "infoMessages": [],
+                            "visible": "[and(steps('secondvirtualhub').DeploySecondVWANHub,steps('secondvirtualhub').DeploySecondVWANHubVPNGateway)]"
+                        },
+                        {
+                            "name": "DeploySecondVWANHubExpressRouteGateway",
+                            "type": "Microsoft.Common.OptionsGroup",
+                            "label": "Do you want to create an ExpressRoute Gateway?",
+                            "subLabel": "",
+                            "defaultValue": "No",
+                            "toolTip": "Controls whether the second VWAN Hub's ExpressRoute Gateway is deployed.",
+                            "constraints": {
+                                "required": false,
+                                "allowedValues": [
+                                    {
+                                        "label": "Yes",
+                                        "value": true
+                                    },
+                                    {
+                                        "label": "No",
+                                        "value": false
+                                    }
+                                ],
+                                "validations": []
+                            },
+                            "infoMessages": [],
+                            "visible": "[steps('secondvirtualhub').DeploySecondVWANHub]"
+                        },
+                        {
+                            "name": "VWANHub02_ExpressRouteGateway_Name",
+                            "type": "Microsoft.Common.TextBox",
+                            "label": "Virtual Hub 02 ExpressRoute Gateway Name",
+                            "subLabel": "",
+                            "defaultValue": "",
+                            "toolTip": "The name of the ExpressRoute Gateway for the second Virtual Hub.",
+                            "constraints": {
+                                "required": true,
+                                "regex": "",
+                                "validationMessage": "",
+                                "validations": [
+                                    {
+                                        "isValid": "[or(or(empty(steps('basics').VWANHub02_ExpressRouteGateway_Name),and(not(startsWith(steps('basics').VWANHub02_ExpressRouteGateway_Name,'[[')),startsWith(steps('basics').VWANHub02_ExpressRouteGateway_Name,'['),endsWith(steps('basics').VWANHub02_ExpressRouteGateway_Name,']'),greater(indexOf(steps('basics').VWANHub02_ExpressRouteGateway_Name,'('),-1),greater(indexOf(steps('basics').VWANHub02_ExpressRouteGateway_Name,')'),-1))),greaterOrEquals(length(steps('basics').VWANHub02_ExpressRouteGateway_Name),1))]",
+                                        "message": "The value must have a length of at least 1."
+                                    },
+                                    {
+                                        "isValid": "[or(or(empty(steps('basics').VWANHub02_ExpressRouteGateway_Name),and(not(startsWith(steps('basics').VWANHub02_ExpressRouteGateway_Name,'[[')),startsWith(steps('basics').VWANHub02_ExpressRouteGateway_Name,'['),endsWith(steps('basics').VWANHub02_ExpressRouteGateway_Name,']'),greater(indexOf(steps('basics').VWANHub02_ExpressRouteGateway_Name,'('),-1),greater(indexOf(steps('basics').VWANHub02_ExpressRouteGateway_Name,')'),-1))),lessOrEquals(length(steps('basics').VWANHub02_ExpressRouteGateway_Name),80))]",
+                                        "message": "The value must have a length of at most 80."
+                                    }
+                                ]
+                            },
+                            "infoMessages": [],
+                            "visible": "[and(steps('secondvirtualhub').DeploySecondVWANHub,steps('secondvirtualhub').DeploySecondVWANHubExpressRouteGateway)]"
+                        }
+                    ]
+                }
+            ]
+        },
+        "outputs": {
+            "kind": "Subscription",
+            "location": "[steps('vwansetup').VWAN_Region.location.name]",
+            "subscriptionId": "[steps('vwansetup').VWAN_Region.subscription.id]",
+            "parameters": {
+                "VWAN_ResourceGroup_Name": "[steps('vwansetup').VWAN_ResourceGroup_Name.value]",
+                "VWAN_Name": "[steps('vwansetup').VWAN_Name]",
+                "VWAN_Region": "[steps('vwansetup').VWAN_Region.location.name]",
+                "VWANHub01_ResourceGroup_Name": "[steps('firstvirtualhub').VWANHub01_ResourceGroup_Name]",
+                "VWANHub01_Name": "[steps('firstvirtualhub').VWANHub01_Name]",
+                "VWANHub01_Region": "[steps('firstvirtualhub').VWANHub01_Region.name]",
+                "VWANHub01_AddressPrefix": "[steps('firstvirtualhub').VWANHub01_AddressPrefix]",
+                "VWANHub01_VPNGateway_Name": "[steps('firstvirtualhub').VWANHub01_VPNGateway_Name]",
+                "VWANHub01_ExpressRouteGateway_Name": "[steps('firstvirtualhub').VWANHub01_ExpressRouteGateway_Name]",
+                "VWANHub02_ResourceGroup_Name": "[steps('secondvirtualhub').VWANHub02_ResourceGroup_Name]",
+                "VWANHub02_Name": "[steps('secondvirtualhub').VWANHub02_Name]",
+                "VWANHub02_Region": "[steps('secondvirtualhub').VWANHub02_Region.name]",
+                "VWANHub02_AddressPrefix": "[steps('secondvirtualhub').VWANHub02_AddressPrefix]",
+                "VWANHub02_VPNGateway_Name": "[steps('secondvirtualhub').VWANHub02_VPNGateway_Name]",
+                "VWANHub02_ExpressRouteGateway_Name": "[steps('secondvirtualhub').VWANHub02_ExpressRouteGateway_Name]",
+                "DeployFirstVWANHub": "[steps('firstvirtualhub').DeployFirstVWANHub]",
+                "DeployFirstVWANHubVPNGateway": "[steps('firstvirtualhub').DeployFirstVWANHubVPNGateway]",
+                "DeployFirstVWANHubExpressRouteGateway": "[steps('firstvirtualhub').DeployFirstVWANHubExpressRouteGateway]",
+                "DeploySecondVWANHub": "[steps('secondvirtualhub').DeploySecondVWANHub]",
+                "DeploySecondVWANHubVPNGateway": "[steps('secondvirtualhub').DeploySecondVWANHubVPNGateway]",
+                "DeploySecondVWANHubExpressRouteGateway": "[steps('secondvirtualhub').DeploySecondVWANHubExpressRouteGateway]",
+                "DateTimeNow": "[steps('vwansetup').DateTimeNow]"
+            }
+        }
+    }
+}
